@@ -35,3 +35,47 @@ AsyncStream.example0();
 
 AsyncStream.fromList([1,2,3])(AsyncStream.printingConsumer)
 
+Math.random()*5
+
+
+AsyncStream.randomProducer(out => {
+  console.log(out.head)
+})
+
+var randomEverySecond = AsyncStream.delayBy(1000, AsyncStream.randomProducer);
+
+var left = AsyncStream.map(randomEverySecond, x => ({ tag: "left", val: x }));
+var right = AsyncStream.map(randomEverySecond, x => ({ tag: "right", val: x }));
+
+var c = AsyncStream.concurrentCompose(left, right)
+
+AsyncStream.take(10, c)(AsyncStream.printingConsumer)
+
+
+var xs0 = AsyncStream.fromList([1,2,3]);
+
+var ys0 = AsyncStream.andThen(xs0, x => AsyncStream.fromList([x, -x]))
+
+ys0(AsyncStream.printingConsumer)
+
+
+randomDelay(5000)(() => console.log("yo"))
+
+
+var randomDelayStream = AsyncStream.onceFromEffect(AsyncStream.randomDelay(5000))
+
+var random = AsyncStream.andThen(
+  AsyncStream.randomProducer,
+  randNum =>
+    AsyncStream.map(
+      AsyncStream.onceFromEffect(AsyncStream.randomDelay(5000*randNum)),
+      _ => randNum
+    )
+)
+
+var left = AsyncStream.map(random, x => ({ tag: "left", val: x }));
+var right = AsyncStream.map(random, x => ({ tag: "right", val: x }));
+var c = AsyncStream.concurrentCompose(left, right)
+
+c(AsyncStream.printingConsumer)
+

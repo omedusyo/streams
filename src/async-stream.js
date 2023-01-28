@@ -92,7 +92,7 @@ exports.printingConsumer = printingConsumer;
 
 // An explicit way to combine a producer with a consumer.
 //
-// combine : Producer[A], Consumer[A] -> Eff[Unit]
+// combine : Producer[A], Consumer[A] -> Effect[Unit]
 function combine(producer, consumer) {
   return () => {
     producer(consumer);
@@ -270,6 +270,18 @@ function zipWith(producer0, producer1, f) {
 }
 exports.zipWith = zipWith;
 
+function andThen(producer, f) {
+  return consumer => {
+    producer(out => {
+      if (out.isDone) {
+        consumer({ isDone: true });
+      } else {
+        return concat(f(out.head), andThen(out.tail, f))(consumer);
+      }
+    });
+  };
+}
+exports.andThen = andThen;
 
 // toListConsumer : Consumer[List[A]] -> Consumer[A]
 function toListConsumer(consumer) {
@@ -314,6 +326,67 @@ function concurrentCompose(producer0, producer1) {
 }
 exports.concurrentCompose = concurrentCompose;
 
+// Producer[NumberBetweenZeroAndOne]
+var randomProducer = consumer => {
+  consumer({
+    done: false,
+    head: Math.random(),
+    tail: randomProducer,
+  });
+};
+exports.randomProducer = randomProducer;
 
-// TODO: do random...
-//       then compose concurrently...
+
+// type AsyncEffect[A] := (A -> Unit) -> Unit
+// onceFromEffect : AsyncEffect[A] -> Producer[A]
+function onceFromEffect(eff) {
+  return consumer => {
+    eff(a => {
+      consumer({
+        isDone: false,
+        head: a,
+        tail: empty,
+      });
+    });
+  };
+}
+exports.onceFromEffect = onceFromEffect;
+
+// randomDelay : Duration -> AsyncEffect Unit
+function randomDelay(maxDuration) {
+  return k => {
+    setTimeout(k, Math.random()*maxDuration);
+  };
+}
+exports.randomDelay = randomDelay;
+
+
+// These async streams are an interesting mix between push/pull.
+// The sync streams are pull streams, i.e. you as the client have control over when to ask for the next value.
+// The stream obeys just obeys the client.
+//
+// But for async streams it's like a conversation...
+// You as a consumer at first subscribe to the first value of the producer,
+// so initially the producer has control over when to output this value.
+// But once the stream gives off that first value, the control is inverted.
+// Suddenly the client can choose when to ask for the next value.
+// But once the client chooses, the control is inverted again and so on and so on...
+//
+// The weird thing is that in a handler I can use the tail non-linearly.
+
+
+// ===Types===
+//
+// type StreamState[A] =
+//     Done
+//   | Continues(head: A, tail: Producer[A])
+//
+// type Producer[A] = Consumer[A] -> Effect[Unit]
+//
+// type Consumer[A] = StreamState[A] -> Effect[Unit]
+//
+// this is not very good
+
+// Note that Producer is covariant functor while
+//           Consumer is contravariant functor
+

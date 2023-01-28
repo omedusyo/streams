@@ -284,7 +284,7 @@ var example7 = toList(take(10, filter(nats, x => x % 2 == 0)));
 exports.example7 = example7;
 
 // this has the same discontinous phenomenon as filter
-// findFirst : Stream A, (A -> Bool) -> Eff (Maybe A)
+// findFirst : Stream A, (A -> Bool) -> Effect (Maybe A)
 function findFirst(stream, p) {
   return () => {
     var out = stream();
