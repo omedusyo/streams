@@ -1,0 +1,14 @@
+
+
+node 
+
+function requireWithDeleteCache(path) {
+  delete require.cache[require.resolve(path)];
+  return require(path);
+}
+
+var Stream = requireWithDeleteCache("./src/sync-stream.js");
+
+
+Stream.square(3)
+
