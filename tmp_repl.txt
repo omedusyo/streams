@@ -9,6 +9,10 @@ function requireWithDeleteCache(path) {
 
 var Stream = requireWithDeleteCache("./src/sync-stream.js");
 
+Stream
 
-Stream.square(3)
+Stream.exampleStream0().tail()
+
+
+Stream.example13()
 
