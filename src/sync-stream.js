@@ -1,4 +1,5 @@
 
+// ===Synchronous Lazy Streams===
 
 // stream analogue of the list (123, 512, 715)
 // example0 : Stream[Int]

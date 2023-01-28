@@ -7,12 +7,31 @@ function requireWithDeleteCache(path) {
   return require(path);
 }
 
+===Sync===
+
 var Stream = requireWithDeleteCache("./src/sync-stream.js");
 
 Stream
 
+
 Stream.exampleStream0().tail()
 
-
 Stream.example13()
+
+===Async===
+
+var AsyncStream = requireWithDeleteCache("./src/async-stream.js");
+
+AsyncStream
+
+
+AsyncStream.syncStream0().tail().tail()
+
+AsyncStream.asyncProducer0(x => {
+});
+
+AsyncStream.example0();
+
+
+AsyncStream.fromList([1,2,3])(AsyncStream.printingConsumer)
 
